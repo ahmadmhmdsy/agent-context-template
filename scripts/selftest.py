@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import _mdtable
 import _packmodel as pm
+import rotate
 
 GOOD = "# T\n\n| id | status |\n|---|---|\n| a | done |\n"
 
@@ -91,6 +92,58 @@ class TestPackModel(unittest.TestCase):
             f.write_bytes(b"one\r\ntwo\r\n")
             self.assertEqual(f.stat().st_size, 10)
             self.assertEqual(pm.Pack(Path(d)).size("a.md"), 8)
+
+
+class TestRotate(unittest.TestCase):
+    def _pack(self, tmp, count):
+        root = Path(tmp)
+        (root / "docs" / "handoff").mkdir(parents=True)
+        entries = [
+            "## 2026-10-%02dT10:00:00+03:00 Entry %d\n%s" % (i + 1, i + 1, "x" * 2000)
+            for i in range(count)
+        ]
+        (root / "docs" / "03-handoff.md").write_text(
+            "# Handoff\n\n" + pm.BEGIN + "\n" + "\n\n".join(entries) + "\n" + pm.END + "\n",
+            encoding="utf-8",
+        )
+        (root / "docs" / "handoff" / "archive-2026.md").write_text(
+            "# Handoff archive -- 2026\n", encoding="utf-8")
+        return pm.Pack(root)
+
+    def test_the_oldest_entries_rotate_and_the_newest_stay(self):
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 7)
+            res = rotate.run(pack, apply=True, year=2026)
+            self.assertLessEqual(res[0]["inline_bytes"], pm.CAPS["docs/03-handoff.md"])
+            inline = [e.title for e in pack.entries("docs/03-handoff.md")]
+            self.assertEqual([t.split()[-1] for t in inline], ["7", "6", "5", "4"])
+            archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2026.md"))]
+            self.assertEqual([t.split()[-1] for t in archived], ["3", "2", "1"])
+
+    def test_rotation_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 6)
+            rotate.run(pack, apply=True, year=2026)
+            before = pack.read("docs/handoff/archive-2026.md")
+            res = rotate.run(pack, apply=True, year=2026)
+            self.assertEqual(res[0]["moved"], 0)
+            self.assertEqual(pack.read("docs/handoff/archive-2026.md"), before)
+
+    def test_a_timestampless_entry_aborts_without_writing(self):
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 6)
+            text = pack.read("docs/03-handoff.md").replace("2026-10-01T10:00:00+03:00", "no timestamp")
+            pack.path("docs/03-handoff.md").write_text(text, encoding="utf-8")
+            with self.assertRaises(rotate.Abort):
+                rotate.run(pack, apply=True, year=2026)
+            self.assertIn("no timestamp", pack.read("docs/03-handoff.md"))
+
+    def test_dry_run_writes_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 6)
+            before = pack.read("docs/03-handoff.md")
+            rotate.run(pack, apply=False, year=2026)
+            self.assertEqual(pack.read("docs/03-handoff.md"), before)
 
 
 if __name__ == "__main__":
