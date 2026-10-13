@@ -28,13 +28,14 @@ Ordering conventions are also declared here so no document can contradict them: 
 
 ## Record fields
 
-| Record | Fields |
-|---|---|
-| Memory topic registry row | `topic`, `shard`, `entries`, `date range`, `last updated` |
-| Handoff entry | `<ISO-8601 timestamp> <title>` heading; `Summary`, `Files`, `Verification`, `Open` |
-| Task row | `id`, `title`, `status`, `owner`, `evidence`, `gate` |
-| Claim | `task`, `owner`, `scope`, `claimed_at`, `expires_at`, `state` |
-| Lesson | `<ISO-8601 timestamp> <title>` heading; `Status`, `Evidence`, `Lesson` |
-| Decision | `<NNNN> <title>` heading; `Status`, `Date`, `Decided by`, `Supersedes` |
+| Record | Fields | Authority |
+|---|---|---|
+| Verified fact | `Last verified`, `Verified by` | spec §5.3 |
+| Memory topic registry row | `topic`, `shard`, `entries`, `date range`, `last updated` | spec §5.2 |
+| Handoff entry | heading `## <ISO-8601 with offset> — <title>`; `State`, `Did`, `Verified`, `Unverified / open`, `Next`, `Blockers`, `Artifacts` | `_templates/handoff-entry.md`; spec §5.1, §6.7 |
+| Task row | `id`, `title`, `status`, `owner`, `scope`, `gate`, `evidence` | `_templates/task-row.md`; spec §7.2 check 4 |
+| Claim | `task`, `owner`, `scope`, `claimed_at`, `expires_at`, `state` | spec §6.5 |
+| Lesson | heading `## <date> — <title>`; `Status`, `Lesson`, `Evidence` — the condition and the source belong inside the `Lesson` value | `_templates/lesson.md`; spec §5.6 |
+| Decision | heading `# NNNN — <title>`; `Status`, `Date`, `Decided by`, `Supersedes` | `docs/09-decisions/0000-template.md`; spec §5.5 |
 
 This file is the single authority. A document that uses a value not listed here is wrong, even if this file is the one that is stale.
