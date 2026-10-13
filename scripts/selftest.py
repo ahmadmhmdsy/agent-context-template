@@ -161,6 +161,31 @@ class TestRotate(unittest.TestCase):
             self.assertNotIn(oldest.title, inline)
             self.assertLessEqual(res[0]["inline_bytes"], pm.CAPS["docs/03-handoff.md"])
 
+    def test_every_planned_move_leaves_the_live_region_when_all_are_archived(self):
+        # A re-merge can put entries the archive already holds back inline. The (timestamp,
+        # title) key stops a second copy, but the inline rewrite must still happen: an entry
+        # left in both homes keeps the region over its cap and --check red forever. The other
+        # test seeds one of the planned moves, so `fresh` is non-empty and cannot see this:
+        # every planned move has to be seeded for the case to exist at all.
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 7)
+            rel = "docs/03-handoff.md"
+            _, move = rotate.plan_blocks(pack, rel, pm.CAPS[rel], pm.NEWEST_ENTRIES)
+            self.assertTrue(move)
+            arch = pack.path("docs/handoff/archive-2026.md")
+            arch.write_text(arch.read_text(encoding="utf-8") + "\n"
+                            + "\n\n".join(e.text for e in move) + "\n", encoding="utf-8")
+            res = rotate.run(pack, apply=True, year=2026)
+            got = next(r for r in res if r["target"] == rel)
+            inline = [e.title for e in pack.entries(rel)]
+            archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2026.md"))]
+            self.assertEqual(got["already_archived"], len(move))
+            self.assertEqual(got["moved"], 0)
+            for e in move:
+                self.assertNotIn(e.title, inline)
+                self.assertEqual(archived.count(e.title), 1)
+            self.assertLessEqual(pack.capped_size(rel), pm.CAPS[rel])
+
     def test_task_rows_rotate_into_the_tasks_archive(self):
         rows = [["t-1", "one", "done", "a", "docs", "-", "`e.md`"],
                 ["t-2", "two", "pending", "b", "docs", "-", ""]]

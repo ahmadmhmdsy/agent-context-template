@@ -75,6 +75,27 @@ def plan_blocks(pack: pm.Pack, rel: str, cap: int, keep: int):
     return ordered, move
 
 
+def _archive_text(pack: pm.Pack, archive_rel: str, fresh: list, year: int) -> str:
+    """The archive with this batch above everything already archived.
+
+    The archive carries the same convention as the live region, so the batch just
+    rotated goes ABOVE everything already archived: it is older than the live
+    entries but newer than every earlier rotation. Appending, as this did, leaves
+    the file in oldest-first order while its own header claims the opposite.
+    """
+    archive = pack.read(archive_rel).rstrip("\n")
+    if not archive:
+        archive = "# %s -- %d\n\nRotated entries, newest first. Rotation moves; it never deletes." % (
+            ARCHIVE_TITLE[archive_rel], year)
+    lines = archive.split("\n")
+    cut = next((n for n, line in enumerate(lines) if line.startswith("## ")), len(lines))
+    head = "\n".join(lines[:cut]).rstrip("\n")
+    tail = "\n".join(lines[cut:]).strip("\n")
+    out = head + "\n\n" + "\n\n".join(e.text for e in fresh)
+    if tail:
+        out += "\n\n" + tail
+    return out + "\n"
+
 def _rotate_blocks(pack: pm.Pack, rel: str, archive_rel: str, apply: bool, year: int) -> dict:
     ordered, move = plan_blocks(pack, rel, pm.CAPS[rel], pm.NEWEST_ENTRIES)
     have = {title for title, _ in h2_blocks(pack.read(archive_rel))}
@@ -89,7 +110,7 @@ def _rotate_blocks(pack: pm.Pack, rel: str, archive_rel: str, apply: bool, year:
     res = {"target": rel, "archive": archive_rel, "kept": len(kept), "moved": len(fresh),
            "already_archived": len(move) - len(fresh),
            "inline_bytes": sum(_bytes(e.text) + 2 for e in kept)}
-    if not fresh:
+    if not move:
         res["status"] = "no-op"
         return res
     res["status"] = "applied" if apply else "dry-run"
@@ -99,23 +120,11 @@ def _rotate_blocks(pack: pm.Pack, rel: str, archive_rel: str, apply: bool, year:
     head, rest = text.split(pm.BEGIN, 1)
     _, tail = rest.split(pm.END, 1)
     new_inline = head + pm.BEGIN + "\n" + "\n\n".join(e.text for e in kept).strip("\n") + "\n" + pm.END + tail
-    archive_text = pack.read(archive_rel).rstrip("\n")
-    if not archive_text:
-        archive_text = "# %s -- %d\n\nRotated entries, newest first. Rotation moves; it never deletes." % (
-            ARCHIVE_TITLE[rel], year)
-    # The archive carries the same convention as the live region, so the batch just
-    # rotated goes ABOVE everything already archived: it is older than the live
-    # entries but newer than every earlier rotation. Appending, as this did, leaves
-    # the file in oldest-first order while its own header claims the opposite.
-    lines = archive_text.split("\n")
-    cut = next((n for n, line in enumerate(lines) if line.startswith("## ")), len(lines))
-    head = "\n".join(lines[:cut]).rstrip("\n")
-    tail = "\n".join(lines[cut:]).strip("\n")
-    new_archive = head + "\n\n" + "\n\n".join(e.text for e in fresh)
-    if tail:
-        new_archive += "\n\n" + tail
-    new_archive += "\n"
-    _write(pack.path(archive_rel), new_archive)
+    # Only the entries the archive does not already hold go into it; the live region is
+    # rewritten either way, because an entry kept inline while its copy already sits in
+    # the archive leaves `--check` red forever.
+    if fresh:
+        _write(pack.path(archive_rel), _archive_text(pack, archive_rel, fresh, year))
     try:
         _write(pack.path(rel), new_inline)
     except OSError as exc:
