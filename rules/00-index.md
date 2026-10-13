@@ -1,8 +1,10 @@
 # rules/ — normative rule modules
 
-This directory is the **authoritative rule text** for the project. CLAUDE.md
-§3 indexes these modules; where a module and CLAUDE.md disagree about a rule,
-the module wins and both are fixed in the same commit.
+This directory is the **authoritative rule text** for the project. This file is
+the **registry of its modules**: the directory holds the authoritative text,
+this index registers every module, and the root `AGENTS.md` router points at
+them. Where a module and any other file disagree about a rule, the module wins
+and both are fixed in the same commit.
 
 ## Contract
 
@@ -12,8 +14,7 @@ the module wins and both are fixed in the same commit.
   docs/ for the area it governs. Only system and platform safety outrank these.
 - **Scope:** one module per governed area. If a rule does not fit an existing
   module, either it belongs in an existing one or a new area is genuinely
-  emerging — and then the new module is added here and to CLAUDE.md §3 in the
-  same commit.
+  emerging — and then the new module is added here in the same commit.
 
 ## Rule IDs
 
@@ -34,28 +35,34 @@ and M is the rule number inside it.
 
 ## Modules
 
-| # | Module | Governs |
-|---|---|---|
-| 01 | priority-and-precedence | resolution of conflicting instructions |
-| 02 | inspect-before-changing | reconnaissance, read-only-first |
-| 03 | safety-and-destructive-actions | irreversible actions |
-| 04 | security-and-secrets | secrets, auth, safe construction |
-| 05 | untrusted-content | injection and untrusted input |
-| 06 | change-management | diffs, commits, branching |
-| 07 | dependencies-and-external-services | new packages and integrations |
-| 08 | verification-and-evidence | tests, proof, honesty |
-| 09 | data-and-asset-handling | data lifecycle and asset classes |
-| 10 | communication-and-reporting | reporting and escalation |
-| 11 | autonomy-and-approval-gates | what needs permission |
-| 12 | coordination-and-multi-agent | concurrent writers and delegation |
-| 13 | tool-and-context-economy | efficient tool and context use |
-| 14 | resource-budgets-and-limits | compute, disk, and spend |
-| 15 | documentation-and-doc-integrity | documentation and drift |
+| # | Module | Governs | Protected |
+|---|---|---|---|
+| 01 | rules/01-priority-and-precedence.md | resolution of conflicting instructions | no |
+| 02 | rules/02-inspect-before-changing.md | reconnaissance, read-only-first | no |
+| 03 | rules/03-safety-and-destructive-actions.md | irreversible actions | yes |
+| 04 | rules/04-security-and-secrets.md | secrets, auth, safe construction | yes |
+| 05 | rules/05-untrusted-content.md | injection and untrusted input | no |
+| 06 | rules/06-change-management.md | diffs, commits, branching | no |
+| 07 | rules/07-dependencies-and-external-services.md | new packages and integrations | no |
+| 08 | rules/08-verification-and-evidence.md | tests, proof, honesty | yes |
+| 09 | rules/09-data-and-asset-handling.md | data lifecycle and asset classes | no |
+| 10 | rules/10-communication-and-reporting.md | reporting and escalation | no |
+| 11 | rules/11-autonomy-and-approval-gates.md | what needs permission | yes |
+| 12 | rules/12-coordination-and-multi-agent.md | concurrent writers and delegation | yes |
+| 13 | rules/13-tool-and-context-economy.md | efficient tool and context use | no |
+| 14 | rules/14-resource-budgets-and-limits.md | compute, disk, and spend | no |
+| 15 | rules/15-documentation-and-doc-integrity.md | documentation and drift | no |
+| 16 | rules/16-scope-and-nearest-guidance.md | scoped entry files, precedence, resolution | yes |
+| 17 | rules/17-learning-loop.md | lesson-to-rule promotion | no |
+
+**Protected** marks a module that is never deleted when adapting; a `no` module
+may be deleted when it cannot apply.
 
 ## Adapting this directory
 
 Delete modules that cannot apply to your project. **Do not delete** modules
-03, 04, 08, 11, or 12 — every project has destructive actions, secrets,
-verification, permissions, and the possibility of a second writer.
+03, 04, 08, 11, 12, or 16 — every project has destructive actions, secrets,
+verification, permissions, the possibility of a second writer, and scoped
+entry files.
 
 A rule nobody can violate is noise, and noise trains agents to skim rules.
