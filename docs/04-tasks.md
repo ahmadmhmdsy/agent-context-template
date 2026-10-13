@@ -41,7 +41,7 @@ is fixed by `_templates/task-row.md`, so a row can be copied from that form.
 <!-- rotate:begin -->
 | id | title | status | owner | scope | gate | evidence |
 |---|---|---|---|---|---|---|
-| T-001 | Resolve all ADAPT markers across the template | pending | — | AGENTS.md, docs/** | start with AGENTS.md §4-§6 | — |
+| T-001 | Resolve all ADAPT markers across the template | pending | — | AGENTS.md, docs/** | AGENTS.md, "Component table" | — |
 | T-002 | Write the project specification | pending | — | docs/01-project.md | needs owner input | — |
 <!-- rotate:end -->
 
