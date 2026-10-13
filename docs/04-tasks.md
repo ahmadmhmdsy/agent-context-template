@@ -32,29 +32,20 @@ Cite the command, file, or run that proves it.
 that is expensive or hard to reverse. A criterion invented afterwards is not a
 criterion.
 
----
-
 ## Now
 
-| ID | Task | Status | Owner | Write scope | Gate / next action | Evidence |
+Only `Now` and `Blocked` rows stay inline. Completed rows move verbatim to
+`docs/tasks/archive-2026.md`; rotation moves, it never deletes. The column order
+is fixed by `_templates/task-row.md`, so a row can be copied from that form.
+
+<!-- rotate:begin -->
+| id | title | status | owner | scope | gate | evidence |
 |---|---|---|---|---|---|---|
 | T-001 | Resolve all ADAPT markers across the template | pending | — | AGENTS.md, docs/** | start with AGENTS.md §4-§6 | — |
 | T-002 | Write the project specification | pending | — | docs/01-project.md | needs owner input | — |
+<!-- rotate:end -->
 
 ## Blocked
 
-| ID | Task | Blocked on | Owner | Since |
-|---|---|---|---|---|
-| — | — | — | — | — |
-
-## Backlog
-
-| ID | Task | Notes |
-|---|---|---|
-| — | — | — |
-
-## Recently done
-
-| ID | Task | Completed | Evidence |
-|---|---|---|---|
-| — | — | — | — |
+None. A blocked row stays in the live table above with `status: blocked` and a
+`gate` that names what unblocks it.
