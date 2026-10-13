@@ -117,11 +117,18 @@ class Pack:
         return out
 
     def scoped_agents(self) -> list[str]:
-        return sorted(
-            str(p.relative_to(self.root)).replace(chr(92), "/")
-            for p in self.root.rglob("AGENTS.md")
-            if p != self.root / "AGENTS.md"
-        )
+        out = []
+        for p in sorted(self.root.rglob("AGENTS.md")):
+            if p == self.root / "AGENTS.md":
+                continue
+            rel = str(p.relative_to(self.root)).replace(chr(92), "/")
+            # Build scaffolding is not part of the pack; every other walker in this
+            # file and in checks.py drops SKIP_TOP, and a fixture committed under
+            # _dev/ is exactly the case that caught this one not doing it.
+            if set(rel.split("/")[:-1]) & SKIP_TOP:
+                continue
+            out.append(rel)
+        return sorted(out)
 
     def component_rows(self) -> list[dict[str, str]]:
         for t in self.tables("AGENTS.md"):

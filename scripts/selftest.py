@@ -86,6 +86,23 @@ class TestPackModel(unittest.TestCase):
         pack.read = lambda rel: "## 2026-10-13T10:00:00+03:00 Orphan\n"
         self.assertEqual(pack.entries("docs/03-handoff.md"), [])
 
+    def test_scaffolding_entries_are_not_scoped_entries(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for rel in ("AGENTS.md", "app/AGENTS.md", "_dev/stage-b/target/AGENTS.md"):
+                f = root / rel
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text("# entry\n", encoding="utf-8")
+            pack = pm.Pack(root)
+            self.assertEqual(pack.scoped_agents(), ["app/AGENTS.md"])
+            saved = pm.SKIP_TOP
+            pm.SKIP_TOP = set()
+            try:
+                self.assertEqual(pack.scoped_agents(),
+                                 ["_dev/stage-b/target/AGENTS.md", "app/AGENTS.md"])
+            finally:
+                pm.SKIP_TOP = saved
+
     def test_size_counts_the_bytes_git_stores(self):
         with tempfile.TemporaryDirectory() as d:
             f = Path(d) / "a.md"
