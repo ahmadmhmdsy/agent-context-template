@@ -23,7 +23,7 @@ version is worse than a missing one, because it is trusted.
 
 ## Machine
 
-| Fact | Value | Verified by | Date |
+| Fact | Value | Verified by | Last verified |
 |---|---|---|---|
 | Operating system | **ADAPT** | **ADAPT** | |
 | Architecture | **ADAPT** | | |
