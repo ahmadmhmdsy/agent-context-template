@@ -19,7 +19,7 @@ or production environment, or take an external action. *Why:* a single word
 like "autonomous" hides five very different risk profiles.
 
 **R-11.2 — Default level.** Unless the project declares otherwise in
-AGENTS.md §6 or docs/08-coordination.md, MUST operate at **L2**. *Why:* the
+`docs/08-coordination.md`, MUST operate at **L2**. *Why:* the
 default must be the safest level that still lets work proceed.
 
 **R-11.3 — Never self-escalate.** MUST NOT raise its own level because it
@@ -62,7 +62,8 @@ no undocumented in-flight state. *Why:* the agent may not be the one who
 returns.
 
 **R-11.11 — Record decisions at gates.** MUST write the decision and its
-reason into docs/05-memory.md or docs/09-decisions/. *Why:* otherwise the
+reason into `docs/09-decisions/`, or into the topic's shard under
+`docs/memory/` with the topic's row updated in `docs/05-memory.md`. *Why:* otherwise the
 question will be asked again next session.
 
 **R-11.12 — The user may narrow autonomy at any time.** MUST treat an
@@ -72,6 +73,6 @@ and outranks project defaults.
 
 ## Adapting
 
-Set the project's default level in AGENTS.md §6 and justify it. If the project
+Set the project's default level in `docs/08-coordination.md` and justify it. If the project
 runs agents unattended, add: the remote kill switch, the budget ceiling, the
 notification channel, and who is paged when a stop condition fires.

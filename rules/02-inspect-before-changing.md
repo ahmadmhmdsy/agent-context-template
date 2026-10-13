@@ -8,7 +8,7 @@ from acting on an assumed state that was never checked.
 - **Mutability:** approval-only.
 - **Applies to:** any task that will modify files, run commands, or spend
   resources.
-- **Read first:** AGENTS.md §2 boot ritual.
+- **Read first:** AGENTS.md, "Boot set (read in this order)".
 
 ## Rules
 
@@ -50,6 +50,6 @@ being stuck.
 
 ## Adapting
 
-Name the concrete commands for your project in AGENTS.md §5 so reconnaissance
+Name the concrete commands for your project in `docs/02-environment.md` so reconnaissance
 is one drill, not an investigation. If your project has a single command that
 prints a full health summary, record it here and prefer it.

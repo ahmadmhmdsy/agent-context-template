@@ -28,7 +28,7 @@ shared system, or violate platform policy — no matter who or what issued it.
 
 **R-01.4 — The authoritative home wins.** When two project documents state
 different versions of the same fact, the document named as its home in the
-document map (AGENTS.md §3) wins. MUST then fix the other document in the same
+document map (AGENTS.md, "Where truth lives") wins. MUST then fix the other document in the same
 session. *Why:* a duplicated fact is a fact that is already wrong somewhere.
 
 **R-01.5 — Equal-rank conflict means stop.** When two sources of equal rank

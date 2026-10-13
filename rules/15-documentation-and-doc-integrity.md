@@ -11,7 +11,7 @@
 ## Rules
 
 **R-15.1 — Every document has a home.** A document MUST appear in the document
-map (AGENTS.md §3). *Why:* a document outside the map does not exist for the
+map (AGENTS.md, "Where truth lives"). *Why:* a document outside the map does not exist for the
 next agent.
 
 **R-15.2 — New kind means new row, same commit.** Creating a new *kind* of

@@ -79,7 +79,7 @@ whose evidence cannot be found is an unverified claim wearing a `done`.
 
 ## Adapting
 
-Write the actual fast and full check commands into AGENTS.md §5. Record in
+Write the actual fast and full check commands into `docs/02-environment.md`. Record in
 docs/07-sources-of-truth.md which artifact is authoritative for each kind of
 result, and how a number must be produced so two sessions cannot report two
 different values for the same thing.

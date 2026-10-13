@@ -39,8 +39,9 @@ scoped entry is in `_templates/`.
 
 ## Frozen surfaces
 
-These surfaces are frozen; each file's own Contract block owns its change
-control:
+These surfaces are frozen. The rule modules change only through their
+`## Contract` section, and `SOUL.md` only through its `## Change control`
+section:
 
 - `SOUL.md` — identity.
 - `AGENTS.md` — this router.

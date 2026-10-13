@@ -8,10 +8,10 @@ the fact produces a rationalization, not a record.
 | Form | Produces | Close-out when finished |
 |---|---|---|
 | plan.md | a plan for a feature or a project phase | tasks created in docs/04-tasks.md; spec updated if scope moved |
-| investigation.md | a question answered with evidence | result recorded; lesson added to docs/05-memory.md; task status updated |
+| investigation.md | a question answered with evidence | result recorded; lesson added to a shard under `docs/memory/` with the topic's row updated in `docs/05-memory.md`; task status updated |
 | handoff-entry.md | one entry in docs/03-handoff.md | affected task rows updated |
 | task-row.md | one row in docs/04-tasks.md | evidence cell cites the artifact that proves it |
-| lesson.md | one entry in docs/05-memory.md | dated, with its condition and source |
+| lesson.md | one entry in a topic shard under `docs/memory/` | dated, with its condition and source |
 | incident.md | a record of something that broke | timeline, root cause, follow-up tasks, and a lesson |
 | session-close.md | the shutdown ritual | all four state documents updated |
 | component-agents.md | a scoped AGENTS.md for one component | the component has a row in the root component table |

@@ -19,7 +19,7 @@ than assuming availability. *Why:* availability changes between the plan and
 the launch.
 
 **R-14.3 — Leave headroom.** MUST NOT consume a shared resource to its limit.
-The project declares the ceiling in AGENTS.md §6; absent one, MUST leave
+The project declares the ceiling in `docs/02-environment.md`; absent one, MUST leave
 substantial headroom. *Why:* the last few percent are what cause other people's
 failures.
 
@@ -66,7 +66,8 @@ expensive operation consumes without authorization.
 
 ## Adapting
 
-Record in AGENTS.md §6: the machine's actual limits, the exclusive resources,
+Record in `docs/02-environment.md` the machine's actual limits, and in
+`docs/08-coordination.md` the exclusive resources,
 the declared headroom rule, the budget ceilings, and the cleanup policy. This
 is the module most likely to need project-specific numbers — fill them in or
 delete the module if the project consumes no significant shared resource.

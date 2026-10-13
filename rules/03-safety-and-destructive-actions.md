@@ -64,7 +64,7 @@ files.
 
 ## Adapting
 
-Add project-specific hazards to AGENTS.md §6: the shared resource, the
-directory that must never be edited, the command that has taken the system down
+Add project-specific hazards where they belong: the shared resource and the
+directory that must never be edited in `docs/08-coordination.md`, the command that has taken the system down
 before. Every mature project has at least one rule that exists because of a
 specific incident — write that one down here.

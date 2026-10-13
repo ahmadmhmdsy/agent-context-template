@@ -67,6 +67,6 @@ should a future session do differently because of this?
 
 - [ ] Report finished and filed.
 - [ ] Row added to the project's result ledger, if one exists.
-- [ ] Lesson added to docs/05-memory.md.
+- [ ] Lesson added to the topic's shard, `docs/memory/<topic>.md`, and that topic's row updated in `docs/05-memory.md`.
 - [ ] Task status updated in docs/04-tasks.md.
 - [ ] Artifacts retained or cleaned up per rules/09.

@@ -1,0 +1,5 @@
+docs/.locks/
+__pycache__/
+*.pyc
+.venv/
+*.tmp

@@ -75,6 +75,6 @@ touched.
 ## Conflict resolution
 
 1. Stop both writers on the contested artifact.
-2. Record both positions with evidence in docs/05-memory.md.
+2. Record both positions with evidence in the topic's shard under `docs/memory/`, and update the topic's row in `docs/05-memory.md`.
 3. Escalate to the artifact's owner, or the human owner if none is named.
 4. Apply the decision; do not re-litigate it in the file.

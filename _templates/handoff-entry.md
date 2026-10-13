@@ -1,4 +1,4 @@
-## <ISO 8601 with offset> — <short title>
+## <ISO-8601 with offset> — <title>
 
 **State.** Where the project is right now, in two or three sentences. Assume
 the reader has read nothing else.

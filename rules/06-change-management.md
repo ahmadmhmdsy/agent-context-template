@@ -65,5 +65,4 @@ reasons that no longer exist.
 ## Adapting
 
 Record the project's branch strategy, commit-message convention, required
-review process, and any pre-commit hooks in AGENTS.md §7 and
-docs/08-coordination.md.
+review process, and any pre-commit hooks in `docs/08-coordination.md`.

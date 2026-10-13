@@ -49,4 +49,4 @@ rule change will recur.
 
 ## Lesson
 
-Append the durable form of this to docs/05-memory.md.
+Append the durable form of this to the topic's shard, `docs/memory/<topic>.md`, and update that topic's row in `docs/05-memory.md`.
