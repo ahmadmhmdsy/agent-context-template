@@ -17,13 +17,13 @@ not in_progress.
 
 | Column | Meaning |
 |---|---|
-| ID | stable identifier; never reused |
-| Task | what it delivers, in one line |
-| Status | pending / in_progress / blocked / done |
-| Owner | who is accountable right now |
-| Write scope | the paths this task may modify — required when more than one writer is active |
-| Gate / next action | what unblocks it, or the immediate next step |
-| Evidence | the artifact that proves the status — required for done |
+| id | stable identifier; never reused |
+| title | what it delivers, in one line |
+| status | the task's workflow state — `docs/00-schema.md` owns the values |
+| owner | who is accountable right now |
+| scope | the paths this task may modify — required when more than one writer is active |
+| gate | what unblocks it, or the immediate next step |
+| evidence | the artifact that proves the status — required for done |
 
 **Evidence rule:** a row marked done with an empty Evidence cell is not done.
 Cite the command, file, or run that proves it.

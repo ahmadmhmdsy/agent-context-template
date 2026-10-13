@@ -67,7 +67,7 @@ router and the four adapters are pointer-only.
 
 **Did.** Landed Tasks 1-5 of the v2 plan — the schema authority, the rule
 registry, the router with its component table, and the four facts-free adapters
-(head commits 56ab6c0..b7a0dc4).
+(commits 9b8d35c..b7a0dc4).
 
 **Verified.** PASS — `scripts/validate_context.py` reports 0 errors; all four
 adapters are <= 1024 B with 0 rule ids and one identical post-H1 body hash.

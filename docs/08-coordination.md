@@ -33,7 +33,6 @@ renewable.
 <!-- rotate:begin -->
 | task | owner | scope | claimed_at | expires_at | state |
 |---|---|---|---|---|---|
-| — | — | — | — | — | — |
 <!-- rotate:end -->
 
 1. Read the claims table before touching anything.
