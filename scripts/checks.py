@@ -505,7 +505,16 @@ def c13_locks(pack):
     return out
 
 
+# The four ported checks that assert the pack is complete and internally consistent run in
+# every pass. `c00_adapt` is deliberately not in this tuple: its findings are `info` - the
+# count of markers a consumer still has to fill in - so `validate_context.py` prints them as
+# part of its report and they never count as an error or a warning. Forms keep their markers
+# on purpose, so a non-zero count there is correct and is not a finding.
 ALL = (
+    c00_required,
+    c00_index,
+    c00_paths,
+    c00_contracts,
     c01_adapter_purity,
     c02_scoped_entries,
     c03_vocabulary,

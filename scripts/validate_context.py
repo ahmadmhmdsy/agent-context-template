@@ -75,6 +75,13 @@ def main(argv=None) -> int:
         if review_by:
             print("baseline review_by %s" % review_by)
         print("%d errors, %d warnings" % (len(errors), len(warnings)))
+        # The ADAPT report, which is not a finding: it counts the markers a consumer still
+        # has to fill in. Forms keep theirs on purpose, so this never changes the exit code
+        # and never appears in --json, whose keys are a contract.
+        adapt = checks.c00_adapt(pack)
+        for f in sorted(adapt, key=lambda f: f.path):
+            print("%-9s %-42s %s" % (f.severity.upper(), f.path, f.message))
+        print("%d file(s) still carry ADAPT markers" % len(adapt))
     return 1 if errors else 0
 
 
