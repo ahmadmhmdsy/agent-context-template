@@ -33,7 +33,7 @@ Ordering conventions are also declared here so no document can contradict them: 
 | Verified fact | `Last verified`, `Verified by` | `docs/02-environment.md` |
 | Memory topic registry row | `topic`, `shard`, `entries`, `date range`, `last updated` | `docs/05-memory.md` |
 | Handoff entry | heading `## <ISO-8601 with offset> — <title>`; `State`, `Did`, `Verified`, `Unverified / open`, `Next`, `Blockers`, `Artifacts` | `_templates/handoff-entry.md` |
-| Task row | `id`, `title`, `status`, `owner`, `scope`, `gate`, `evidence` | `_templates/task-row.md`; `scripts/validate_context.py` |
+| Task row | `id`, `title`, `status`, `owner`, `scope`, `gate`, `evidence` | `_templates/task-row.md` |
 | Claim | `task`, `owner`, `scope`, `claimed_at`, `expires_at`, `state` | `docs/08-coordination.md` |
 | Lesson | heading `## <date> — <title>`; `Status`, `Lesson`, `Evidence` — the condition and the source belong inside the `Lesson` value | `_templates/lesson.md`; `rules/17-learning-loop.md` |
 | Decision | heading `# NNNN — <title>`; `Status`, `Date`, `Decided by`, `Supersedes` | `docs/09-decisions/0000-template.md` |
