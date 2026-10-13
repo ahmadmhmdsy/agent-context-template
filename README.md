@@ -90,6 +90,14 @@ python scripts/adopt.py --target TARGET [--components COMPONENTS]
   markers.
 - `--json` — machine-readable summary of what was written, edited and skipped.
 
+If you would rather have an agent drive this, the adoption skill ships in
+`skills/adopt-context-pack/`. Point an agent at that directory, or copy it into
+your project, and it will resolve the pack (a local checkout, a cache, or a
+shallow clone of this repository), plan the install, and then do the part this
+section describes by hand: the marker sweep, the reconciliation with anything
+you already have, and an honest report of what is still unknown. It is the same
+procedure, with the judgement steps written down.
+
 Then finish the job by hand, because the pack cannot know your project:
 
 1. **Grep for `ADAPT`** and resolve every marker. Each is a fact only you can

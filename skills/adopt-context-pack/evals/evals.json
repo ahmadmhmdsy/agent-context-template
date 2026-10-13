@@ -1,0 +1,101 @@
+{
+  "skill_name": "adopt-context-pack",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "we keep re-explaining this repo to claude every session and it still runs the wrong test command (it guesses pytest, but our suite is `python -m unittest discover -s tests`). can you set up the agent context thing in here so it stops? repo is the current dir",
+      "expected_output": "The pack adopted into the repository: AGENTS.md entry point and boot set, the scoped entry naming the real unittest command, docs/01 + docs/02 + docs/07 filled from measurement, inherited pack state cleared, validator green, and a report that separates what was measured from what is still unknown.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "AGENTS.md exists at the repo root and states the pack's boot order",
+          "type": "programmatic"
+        },
+        {
+          "text": "the scoped AGENTS.md names `python -m unittest discover -s tests` as the smallest validation command",
+          "type": "programmatic"
+        },
+        {
+          "text": "the inherited pack state was cleared: docs/03-handoff.md and docs/04-tasks.md contain no entries describing the pack's own rebuild",
+          "type": "programmatic"
+        },
+        {
+          "text": "no ADAPT marker remains in a non-template file that the agent claimed to have filled",
+          "type": "programmatic"
+        },
+        {
+          "text": "the final report gives the exact validation command and its real output rather than the phrase 'tests pass'",
+          "type": "programmatic"
+        },
+        {
+          "text": "the final report names at least one thing it did not measure or left unknown",
+          "type": "qualitative"
+        },
+        {
+          "text": "the agent does not invent runtime or tool versions it could not read back from the machine",
+          "type": "qualitative"
+        },
+        {
+          "text": "the agent does not claim a stranger or third party verified the five boot questions",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "our monorepo (packages/api, packages/worker, packages/ui) already has an AGENTS.md and a rules/ directory we're attached to. can you bring in that context-pack template without us ending up with two competing rule trees?",
+      "expected_output": "A reconciliation rather than an overwrite: a snapshot branch, an explicit per-file decision table, the existing entry point kept and pointed at the new mechanisms, the numbered modules dropped or deferred, the pre-existing findings recorded in a baseline, and no silent replacement of the project's own files.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "a snapshot (branch or copy) is created or proposed before any file is overwritten",
+          "type": "programmatic"
+        },
+        {
+          "text": "the agent asks for consent, or refuses, before passing --force over an existing AGENTS.md",
+          "type": "qualitative"
+        },
+        {
+          "text": "the existing AGENTS.md is not silently replaced by the pack's copy",
+          "type": "programmatic"
+        },
+        {
+          "text": "the result does not contain two registered rule trees with no stated precedence rule",
+          "type": "programmatic"
+        },
+        {
+          "text": "pre-existing validator findings are recorded with a baseline rather than by weakening a check",
+          "type": "qualitative"
+        },
+        {
+          "text": "the report is organised per colliding path or per structural collision, not as a general 'done'",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "i copied the adopt-context-pack skill folder into this project because the box has no internet. pack isn't here. set up the agent context in this repo anyway",
+      "expected_output": "The agent states that the pack source is missing, offers the concrete ways to supply it (clone URL, a local checkout path via --pack or CONTEXT_PACK_HOME), and does not fabricate a pack or write documents from memory of one.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "the agent reports the pack source as missing/blocked rather than improvising a pack",
+          "type": "programmatic"
+        },
+        {
+          "text": "the agent names at least one concrete way to supply the pack (a path, an environment variable, or the repository URL)",
+          "type": "programmatic"
+        },
+        {
+          "text": "no AGENTS.md or rules tree is written from memory in place of the real pack",
+          "type": "programmatic"
+        },
+        {
+          "text": "setup.py resolve is attempted before any write, and its failure is what drives the answer",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

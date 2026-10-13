@@ -89,7 +89,8 @@ class TestPackModel(unittest.TestCase):
     def test_scaffolding_entries_are_not_scoped_entries(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            for rel in ("AGENTS.md", "app/AGENTS.md", "_dev/stage-b/target/AGENTS.md"):
+            for rel in ("AGENTS.md", "app/AGENTS.md", "_dev/stage-b/target/AGENTS.md",
+                        "skills/adopt-context-pack/AGENTS.md"):
                 f = root / rel
                 f.parent.mkdir(parents=True, exist_ok=True)
                 f.write_text("# entry\n", encoding="utf-8")
@@ -99,7 +100,8 @@ class TestPackModel(unittest.TestCase):
             pm.SKIP_TOP = set()
             try:
                 self.assertEqual(pack.scoped_agents(),
-                                 ["_dev/stage-b/target/AGENTS.md", "app/AGENTS.md"])
+                                 ["_dev/stage-b/target/AGENTS.md", "app/AGENTS.md",
+                                  "skills/adopt-context-pack/AGENTS.md"])
             finally:
                 pm.SKIP_TOP = saved
 

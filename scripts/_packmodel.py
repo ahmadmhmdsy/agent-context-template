@@ -31,12 +31,13 @@ CAPS = {
 # file never exceeded.
 REGION_CAPPED = ("docs/03-handoff.md", "docs/04-tasks.md", "docs/08-coordination.md")
 
-# What ships. _dev/ holds this pack's own design record and plan, and .superpowers/
-# holds scratch; neither is copied into a target and neither is any adopter's
-# business. Defined here once, because two tools need the same answer: adopt.py
-# skips these when copying, and the ADAPT report skips them so its number describes
-# the pack rather than the plan that built it.
-SKIP_TOP = {"_dev", ".git", ".superpowers", "__pycache__", ".venv", ".locks"}
+# What ships. _dev/ holds this pack's own design record and plan, .superpowers/ holds
+# scratch, and skills/ holds the adoption skill this repository distributes; none is
+# copied into a target and none is any adopter's business. Defined here once, because
+# three tools need the same answer: adopt.py skips these when copying, and the ADAPT
+# report and the rule-id check skip them so their numbers and findings describe the
+# pack rather than the plan that built it or the prose that describes it.
+SKIP_TOP = {"_dev", ".git", ".superpowers", "__pycache__", ".venv", ".locks", "skills"}
 ADAPTER_CAP = 1024
 SCOPED_CAP = 6144
 ENTRY_CAP = 2048

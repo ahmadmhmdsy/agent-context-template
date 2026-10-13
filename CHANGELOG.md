@@ -2,6 +2,8 @@
 
 ## 2.0.0
 
+It also ships an adoption skill, `skills/adopt-context-pack/`: an agent in another project can be pointed at that directory (or have it copied in) and then resolves the pack, plans the install, and drives the judgment half - the marker sweep, the reconciliation with an existing agent system, and the honest report.
+
 Breaking layout change: the pack no longer ships two complete entry files. It ships one written entry, `AGENTS.md`, plus pointer-only adapters for other harnesses. An agent that used to read `CLAUDE.md` as a full operating document must read `AGENTS.md` instead; each adapter states where to go.
 
 ### Defects fixed
