@@ -30,13 +30,13 @@ Ordering conventions are also declared here so no document can contradict them: 
 
 | Record | Fields | Authority |
 |---|---|---|
-| Verified fact | `Last verified`, `Verified by` | spec §5.3 |
-| Memory topic registry row | `topic`, `shard`, `entries`, `date range`, `last updated` | spec §5.2 |
-| Handoff entry | heading `## <ISO-8601 with offset> — <title>`; `State`, `Did`, `Verified`, `Unverified / open`, `Next`, `Blockers`, `Artifacts` | `_templates/handoff-entry.md`; spec §5.1, §6.7 |
-| Task row | `id`, `title`, `status`, `owner`, `scope`, `gate`, `evidence` | `_templates/task-row.md`; spec §7.2 check 4 |
-| Claim | `task`, `owner`, `scope`, `claimed_at`, `expires_at`, `state` | spec §6.5 |
-| Lesson | heading `## <date> — <title>`; `Status`, `Lesson`, `Evidence` — the condition and the source belong inside the `Lesson` value | `_templates/lesson.md`; spec §5.6 |
-| Decision | heading `# NNNN — <title>`; `Status`, `Date`, `Decided by`, `Supersedes` | `docs/09-decisions/0000-template.md`; spec §5.5 |
+| Verified fact | `Last verified`, `Verified by` | `docs/02-environment.md` |
+| Memory topic registry row | `topic`, `shard`, `entries`, `date range`, `last updated` | `docs/05-memory.md` |
+| Handoff entry | heading `## <ISO-8601 with offset> — <title>`; `State`, `Did`, `Verified`, `Unverified / open`, `Next`, `Blockers`, `Artifacts` | `_templates/handoff-entry.md` |
+| Task row | `id`, `title`, `status`, `owner`, `scope`, `gate`, `evidence` | `_templates/task-row.md`; `scripts/validate_context.py` |
+| Claim | `task`, `owner`, `scope`, `claimed_at`, `expires_at`, `state` | `docs/08-coordination.md` |
+| Lesson | heading `## <date> — <title>`; `Status`, `Lesson`, `Evidence` — the condition and the source belong inside the `Lesson` value | `_templates/lesson.md`; `rules/17-learning-loop.md` |
+| Decision | heading `# NNNN — <title>`; `Status`, `Date`, `Decided by`, `Supersedes` | `docs/09-decisions/0000-template.md` |
 
 The `entries` cell of a memory topic registry row is the number of lesson headings in the shard it names, and `last updated` is the newest of their dates; both change only when a lesson is added or superseded.
 
