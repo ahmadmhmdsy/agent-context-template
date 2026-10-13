@@ -14,8 +14,9 @@ Fill rules:
   by the owner.
 - `Status` is one of the values in docs/00-schema.md; the promotion lifecycle is
   rules/17-learning-loop.md.
-- Append to docs/05-memory.md. Never delete a lesson; supersede it with a new
-  entry that says what changed.
+- A lesson goes in its topic's shard, `docs/memory/<topic>.md`; add or update
+  that topic's row in `docs/05-memory.md`. Never delete a lesson; supersede it
+  with a new entry that says what changed.
 - If the lesson changes what future work should do, also update the spec or the
   plan it affects.
 -->

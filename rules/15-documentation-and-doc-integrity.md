@@ -49,8 +49,8 @@ that mixes them cannot be relied on for either.
 **R-15.10 — Creation is not completion.** Every artifact kind has a close-out
 ritual. An artifact is complete only when its ritual has run: the report
 finished, the ledger row added, the lesson recorded, the task status updated.
-Evidence resolution for a `done` row is governed by R-08.15. *Why:* an artifact
-without a close-out is an orphan.
+*Why:* an artifact without a close-out is an orphan. Evidence resolution for a
+`done` row is governed by R-08.15.
 
 **R-15.11 — Keep growing documents readable.** For append-only documents that
 grow without bound, SHOULD supersede or archive rather than delete, and MUST

@@ -71,10 +71,11 @@ build. *Why:* suppressed warnings become production incidents.
 change does not handle. *Why:* an unstated limitation is a defect the reader
 did not agree to accept.
 
-**R-08.15 — Evidence must resolve.** A `done` row's evidence MUST be an
-existing path relative to the repository root. A path that does not exist, or an
-empty evidence cell, makes the row not-`done`. *Why:* a status whose evidence
-cannot be found is an unverified claim wearing a `done`.
+**R-08.15 — Evidence must resolve.** A `done` **task** row's evidence MUST
+be an existing path relative to the repository root. A path that does not exist,
+or an empty evidence cell, makes the row not-`done`. This narrows R-08.4 for
+`done` rows: the recorded evidence is the path, not the command. *Why:* a status
+whose evidence cannot be found is an unverified claim wearing a `done`.
 
 ## Adapting
 
