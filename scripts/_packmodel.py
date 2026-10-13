@@ -25,8 +25,8 @@ CAPS = {
     "docs/08-coordination.md": 2048,
 }
 # Three of these caps apply to the bytes between the rotation markers, not to the
-# whole file. docs/08-coordination.md runs over 3 KB as a file while its claims
-# region is a few hundred bytes, so a whole-file measure reports a false over-cap
+# whole file. docs/08-coordination.md is multi-KB as a file while its claims region
+# is under a kilobyte, so a whole-file measure reports a false over-cap
 # and the "fix" that follows from it is a real content cut to satisfy a budget the
 # file never exceeded.
 REGION_CAPPED = ("docs/03-handoff.md", "docs/04-tasks.md", "docs/08-coordination.md")
@@ -61,8 +61,6 @@ def parse_ts(text: str) -> datetime | None:
     date, clock, off = m.groups()
     if off == "Z":
         off = "+00:00"
-    elif re.fullmatch(r"[+-]\d{2}", off):
-        off += ":00"
     elif re.fullmatch(r"[+-]\d{4}", off):
         off = off[:3] + ":" + off[3:]
     try:
@@ -98,8 +96,14 @@ class Pack:
         return p.read_text(encoding="utf-8") if p.is_file() else ""
 
     def size(self, rel: str) -> int:
-        p = self.root / rel
-        return p.stat().st_size if p.is_file() else 0
+        """Bytes as a cap must count them: UTF-8 length with LF endings.
+
+        The adapter and scoped caps are written in bytes, and st_size is not those
+        bytes: read_text turns a CRLF pair into one LF, so on a Windows checkout with
+        core.autocrlf=true the same file measures two bytes per line larger than it
+        does in CI, and a cap that passes here fails there. capped_size already
+        counted this way; size now agrees with it."""
+        return len(self.read(rel).encode("utf-8"))
 
     def tables(self, rel: str) -> list[Table]:
         return find_tables(self.read(rel))
@@ -121,7 +125,7 @@ class Pack:
 
     def component_rows(self) -> list[dict[str, str]]:
         for t in self.tables("AGENTS.md"):
-            if t.header and t.header[0] == "id":
+            if t.has("id"):
                 return t.rows
         return []
 

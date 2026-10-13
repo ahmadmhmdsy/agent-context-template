@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 
 SEPARATOR = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$")
+CELL = re.compile(r"(?<!\\)\|")
 
 
 class TableError(ValueError):
@@ -12,12 +13,18 @@ class TableError(ValueError):
 
 
 def cells(line: str) -> list[str]:
+    """Split one row. A backslash-escaped pipe is a cell's content, not a delimiter.
+
+    docs/00-schema.md writes a vocabulary cell as several escaped pipes, which is five
+    pipe characters and one cell. Splitting on every pipe read that row as five cells
+    against a two-cell header and raised, so the one file that defines every vocabulary
+    was the one file no table could be read from."""
     s = line.strip()
     if s.startswith("|"):
         s = s[1:]
-    if s.endswith("|"):
+    if s.endswith("|") and not s.endswith("\\|"):
         s = s[:-1]
-    return [c.strip() for c in s.split("|")]
+    return [c.strip().replace("\\|", "|") for c in CELL.split(s)]
 
 
 @dataclass(frozen=True)
@@ -34,6 +41,15 @@ class Table:
 
     def col(self, name: str) -> list[str]:
         return [r.get(name.lower(), "") for r in self.rows]
+
+    def has(self, *names: str) -> bool:
+        """True when the header carries every named column, ignoring case.
+
+        One home for the question "is this the table I mean": a caller asks for the
+        columns it needs instead of comparing header spellings, which differ per file
+        (docs/04-tasks.md is lowercase, docs/02-environment.md is title-case)."""
+        got = {h.lower() for h in self.header}
+        return all(n.lower() in got for n in names)
 
 
 def find_tables(text: str) -> list[Table]:
@@ -54,9 +70,8 @@ def find_tables(text: str) -> list[Table]:
                 # spelling: docs/00-schema.md declares `Last verified` and `Verified by` for
                 # the environment table and lowercase names for the task and claim tables, and
                 # every lookup in the checks is written lowercase. Comparing literally made c05
-                # and c06 read the environment table as absent: c05 checked no timestamp at all
-                # and c06 warned 'no environment table with Last verified and Verified by
-                # columns' about the file that has both.
+                # and c06 read the environment table as absent: c05 checked no timestamp at all,
+                # and c06 warned that no environment table with those two columns existed.
                 rows.append({k.lower(): v for k, v in zip(header, got)})
                 j += 1
             out.append(Table(header, rows, i, j))
@@ -67,9 +82,11 @@ def find_tables(text: str) -> list[Table]:
 
 
 def render(header: list[str], rows: list[dict[str, str]]) -> list[str]:
+    # A cell value may hold a pipe (find_tables unescapes them), so it goes back
+    # escaped: writing the raw character turns one cell into two and breaks the table.
     out = ["| " + " | ".join(header) + " |", "|" + "|".join(["---"] * len(header)) + "|"]
     for r in rows:
-        out.append("| " + " | ".join(r.get(h.lower(), "") for h in header) + " |")
+        out.append("| " + " | ".join(r.get(h.lower(), "").replace("|", "\\|") for h in header) + " |")
     return out
 
 

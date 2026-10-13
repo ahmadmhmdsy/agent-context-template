@@ -45,6 +45,23 @@ class TestMdtable(unittest.TestCase):
     def test_fenced_blocks_are_found(self):
         self.assertEqual(_mdtable.fenced_blocks("x\n" + chr(96) * 3 + "\nhi\n" + chr(96) * 3 + "\n"), [(2, "hi")])
 
+    def test_an_escaped_pipe_is_not_a_delimiter(self):
+        text = "# T\n\n| id | note |\n|---|---|\n| a | " + chr(96) + "x \\| y" + chr(96) + " |\n"
+        t = _mdtable.find_tables(text)[0]
+        self.assertEqual(t.rows[0]["note"], chr(96) + "x | y" + chr(96))
+
+    def test_render_escapes_a_pipe_inside_a_cell(self):
+        out = _mdtable.render(["id", "note"], [{"id": "a", "note": "x|y"}])
+        self.assertEqual(out[2], "| a | x\\|y |")
+        back = _mdtable.find_tables("# T\n\n" + "\n".join(out) + "\n")[0]
+        self.assertEqual(back.rows[0]["note"], "x|y")
+
+    def test_has_answers_for_column_names_ignoring_case(self):
+        t = _mdtable.find_tables("# T\n\n| ID | Status |\n|---|---|\n| a | done |\n")[0]
+        self.assertTrue(t.has("id"))
+        self.assertTrue(t.has("id", "STATUS"))
+        self.assertFalse(t.has("owner"))
+
 
 class TestPackModel(unittest.TestCase):
     def test_a_timestamp_needs_an_offset(self):
@@ -67,6 +84,13 @@ class TestPackModel(unittest.TestCase):
         pack = pm.Pack(Path("."))
         pack.read = lambda rel: "## 2026-10-13T10:00:00+03:00 Orphan\n"
         self.assertEqual(pack.entries("docs/03-handoff.md"), [])
+
+    def test_size_counts_the_bytes_git_stores(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "a.md"
+            f.write_bytes(b"one\r\ntwo\r\n")
+            self.assertEqual(f.stat().st_size, 10)
+            self.assertEqual(pm.Pack(Path(d)).size("a.md"), 8)
 
 
 if __name__ == "__main__":
