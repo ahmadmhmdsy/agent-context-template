@@ -38,4 +38,6 @@ Ordering conventions are also declared here so no document can contradict them: 
 | Lesson | heading `## <date> — <title>`; `Status`, `Lesson`, `Evidence` — the condition and the source belong inside the `Lesson` value | `_templates/lesson.md`; spec §5.6 |
 | Decision | heading `# NNNN — <title>`; `Status`, `Date`, `Decided by`, `Supersedes` | `docs/09-decisions/0000-template.md`; spec §5.5 |
 
+The `entries` cell of a memory topic registry row is the number of lesson headings in the shard it names, and `last updated` is the newest of their dates; both change only when a lesson is added or superseded.
+
 This file is the single authority. A document that uses a value not listed here is wrong, even if this file is the one that is stale.
