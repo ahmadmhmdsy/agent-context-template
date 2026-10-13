@@ -26,74 +26,126 @@ PACK_ROOT = Path(__file__).resolve().parent.parent
 SKIP_TOP = pm.SKIP_TOP   # one home, in _packmodel.py; see the note there
 SKIP_REL = ("docs/handoff", "docs/tasks", "docs/memory", "docs/.locks")
 
-SEED_HANDOFF = """# Handoff
+# The four seed paths replace the pack's own state files wholesale: an adopter must not
+# inherit the pack's history. Each seed is derived from the shipped file, so it keeps
+# that file's H1, Contract block, rotation markers and archive footer -- the structure
+# the target's validator requires -- and only its volatile content is emptied. A shorter
+# standalone skeleton dropped the Contract block (three contracts warnings) and pointed
+# at archive-YYYY.md, which nothing creates (two paths errors).
 
-Newest entry first. Each entry starts with an ISO-8601 timestamp and offset.
+BEGIN = "<!-- rotate:begin -->"
+END = "<!-- rotate:end -->"
 
-<!-- rotate:begin -->
-## 2026-01-01T00:00:00+00:00 — ADAPT
+SEED_HANDOFF_ENTRY = """## 2026-01-01T00:00:00+00:00 — ADAPT
 
-- **State:** ADAPT
-- **Did:** ADAPT
-- **Verified:** ADAPT (PASS | FAIL | SKIPPED)
-- **Unverified / open:** ADAPT
-- **Next:** ADAPT
-- **Blockers:** ADAPT
-- **Artifacts:** ADAPT
-<!-- rotate:end -->
-
-Rotated to `docs/handoff/archive-YYYY.md`. Rotation moves; it never deletes.
+**State.** ADAPT
+**Did.** ADAPT
+**Verified.** ADAPT
+**Unverified / open.** ADAPT
+**Next.** ADAPT
+**Blockers.** ADAPT
+**Artifacts.** ADAPT
 """
 
-SEED_TASKS = """# Tasks
-
-Live rows only. Column order is fixed by `docs/00-schema.md`.
-
-<!-- rotate:begin -->
-| id | title | status | owner | scope | gate | evidence |
+SEED_TASK_TABLE = """| id | title | status | owner | scope | gate | evidence |
 |---|---|---|---|---|---|---|
 | T-1 | ADAPT | pending | ADAPT | ADAPT | - | - |
-<!-- rotate:end -->
-
-Completed rows rotate to `docs/tasks/archive-YYYY.md`.
 """
 
-SEED_MEMORY = """# Memory -- topic registry
+SEED_MEMORY_ROW = "| general | `docs/memory/general.md` | 0 | - | ADAPT |"
 
-This registry lists topics, never individual lessons.
-
-| topic | shard | entries | date range | last updated |
-|---|---|---|---|---|
-| general | `docs/memory/general.md` | 0 | - | ADAPT |
-"""
-
-SEED_SHARD = """# Lessons -- general
-
-Oldest first. Status values come from `docs/00-schema.md`.
-
-## ADAPT-<timestamp+offset> ADAPT
+SEED_LESSON = """## 2026-01-01 — ADAPT
 
 - **Status:** observed
 - **Lesson:** ADAPT
 - **Evidence:** ADAPT
 """
 
-# Every path in a seed is a path the *target* repository's validator will read, so
-# each one has to be written the way the shipped docs write it: root-relative, in a
-# code span, never as a Markdown link. check_path_refs runs MD_LINK.sub(" ", body)
-# before it looks for a reference, so a link hides its own target from the one check
-# that resolves paths -- the same reason the live registry writes its shard cell bare.
-SEEDS = {
-    "docs/03-handoff.md": SEED_HANDOFF,
-    "docs/04-tasks.md": SEED_TASKS,
-    "docs/05-memory.md": SEED_MEMORY,
-    "docs/memory/general.md": SEED_SHARD,
-}
+SEED_KEYS = (
+    "docs/03-handoff.md",
+    "docs/04-tasks.md",
+    "docs/05-memory.md",
+    "docs/memory/general.md",
+    "docs/handoff/archive-2026.md",
+    "docs/tasks/archive-2026.md",
+)
 
 
 def module_number(name: str) -> str:
     m = re.match(r"^(\d{2})-", name)
     return m.group(1) if m else ""
+
+
+def module_ref_number(value: str) -> str:
+    """The module a table cell names, whether it holds 05, 05-... or a path."""
+    v = (value or "").strip().strip(chr(96)).replace(chr(92), "/")
+    m = re.search(r"(?:^|/)(\d{2})(?=$|[-./])", v)
+    return m.group(1) if m else ""
+
+
+def valid_name(value: str) -> bool:
+    """A plain component/module name: no separators, drive, root, dotfile or .."""
+    return bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value)) and ".." not in value
+
+
+def shipped_rule_numbers():
+    return {n for n, _ in pm.Pack(PACK_ROOT).rule_modules()}
+
+
+def empty_rotation(text: str, body: str) -> str:
+    if BEGIN not in text or END not in text:
+        return body.rstrip("\n") + "\n"
+    pre, rest = text.split(BEGIN, 1)
+    _, post = rest.split(END, 1)
+    return pre + BEGIN + "\n" + body.rstrip("\n") + "\n" + END + post
+
+
+def replace_table_rows(text: str, is_header, row: str) -> str:
+    lines = text.split("\n")
+    out = []
+    i = 0
+    while i < len(lines):
+        if is_header(lines[i]) and i + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|\s*$", lines[i + 1]):
+            out.append(lines[i])
+            out.append(lines[i + 1])
+            i += 2
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
+                i += 1
+            out.append(row)
+            continue
+        out.append(lines[i])
+        i += 1
+    return "\n".join(out)
+
+
+def empty_memory_table(text: str) -> str:
+    return replace_table_rows(text, lambda l: l.strip().startswith("| topic |") and "shard" in l,
+                              SEED_MEMORY_ROW)
+
+
+def empty_shard(text: str) -> str:
+    out = []
+    for line in text.split("\n"):
+        if line.startswith("## "):
+            break
+        out.append(line)
+    while out and out[-1].strip() == "":
+        out.pop()
+    return "\n".join(out) + "\n\n" + SEED_LESSON
+
+
+def seed_text(key: str) -> str:
+    """The shipped file's own structure, emptied of the pack's state."""
+    text = (PACK_ROOT / key).read_text(encoding="utf-8")
+    if key.startswith("docs/handoff/archive-") or key.startswith("docs/tasks/archive-"):
+        return text
+    if key == "docs/03-handoff.md":
+        return empty_rotation(text, SEED_HANDOFF_ENTRY)
+    if key == "docs/04-tasks.md":
+        return empty_rotation(text, SEED_TASK_TABLE)
+    if key == "docs/05-memory.md":
+        return empty_memory_table(text)
+    return empty_shard(text)
 
 
 def pack_files():
@@ -113,6 +165,8 @@ def plan(target, drop_rules, components, modules):
     actions = []
     for rel in pack_files():
         key = str(rel).replace(chr(92), "/")
+        if key in SEED_KEYS:
+            continue
         if rel.parts[0] == "rules" and module_number(rel.name) in drop_rules:
             actions.append(("drop", key, "rule module declared inapplicable"))
             continue
@@ -123,7 +177,7 @@ def plan(target, drop_rules, components, modules):
             actions.append(("skip", key, "target file already exists"))
         else:
             actions.append(("copy", key, ""))
-    for key in SEEDS:
+    for key in SEED_KEYS:
         if (target / key).exists():
             actions.append(("skip", key, "target file already exists"))
         else:
@@ -138,7 +192,13 @@ def plan(target, drop_rules, components, modules):
 
 
 def apply_plan(target, actions, components, modules, profile, drop_rules):
-    written = []
+    changed = []
+    edited = []
+
+    def note(bucket, key):
+        if key not in bucket:
+            bucket.append(key)
+
     for kind, key, _ in actions:
         if kind == "drop":
             continue
@@ -146,30 +206,32 @@ def apply_plan(target, actions, components, modules, profile, drop_rules):
         dest.parent.mkdir(parents=True, exist_ok=True)
         if kind == "copy":
             shutil.copyfile(PACK_ROOT / key, dest)
-            written.append(key)
+            note(changed, key)
         elif kind == "seed":
-            dest.write_text(SEEDS[key], encoding="utf-8", newline="\n")
-            written.append(key)
+            dest.write_text(seed_text(key), encoding="utf-8", newline="\n")
+            note(changed, key)
         elif kind == "create":
             if key.endswith("AGENTS.md"):
                 body = (PACK_ROOT / "_templates" / "component-agents.md").read_text(encoding="utf-8")
             else:
                 body = "# Component rule: %s\n\nADAPT\n" % Path(key).stem
             dest.write_text(body, encoding="utf-8", newline="\n")
-            written.append(key)
+            note(changed, key)
     if components:
-        add_component_rows(target, components)
+        add_component_rows(target, components, edited)
     coord = target / "docs" / "08-coordination.md"
     if coord.is_file():
         text = coord.read_text(encoding="utf-8")
-        text = text.replace("SHARED TREE", profile.upper().replace("-", " "), 1)
-        coord.write_text(text, encoding="utf-8", newline="\n")
+        new = text.replace("SHARED TREE", profile.upper().replace("-", " "), 1)
+        if new != text:
+            coord.write_text(new, encoding="utf-8", newline="\n")
+            note(edited, "docs/08-coordination.md")
     if drop_rules:
-        drop_index_rows(target, drop_rules)
-    return written
+        drop_index_rows(target, drop_rules, edited)
+    return changed, edited
 
 
-def add_component_rows(target, components):
+def add_component_rows(target, components, edited):
     path = target / "AGENTS.md"
     text = path.read_text(encoding="utf-8")
     try:
@@ -185,14 +247,19 @@ def add_component_rows(target, components):
             continue
         rows.append({"id": cid, "path scope": "%s/" % cid, "scoped entry": "%s/AGENTS.md" % cid,
                      "component rule": "rules/components/%s.md" % cid})
-    path.write_text(replace_table(text, table, rows), encoding="utf-8", newline="\n")
+    new = replace_table(text, table, rows)
+    if new != text:
+        path.write_text(new, encoding="utf-8", newline="\n")
+        if "AGENTS.md" not in edited:
+            edited.append("AGENTS.md")
 
 
-def drop_index_rows(target, drop_rules):
+def drop_index_rows(target, drop_rules, edited):
     path = target / "rules" / "00-index.md"
     if not path.is_file():
         return
-    text = path.read_text(encoding="utf-8")
+    original = path.read_text(encoding="utf-8")
+    text = original
     try:
         tables = find_tables(text)
     except TableError:
@@ -200,13 +267,14 @@ def drop_index_rows(target, drop_rules):
     for t in tables:
         if not t.rows:
             continue
-        col = next((h for h in t.header if re.search(r"module|id|no", h, re.I)), None)
-        if not col:
-            continue
-        keep = [r for r in t.rows if module_number(r.get(col, "")) not in drop_rules]
+        keep = [r for r in t.rows
+                if not any(module_ref_number(v) in drop_rules for v in r.values())]
         if len(keep) != len(t.rows):
             text = replace_table(text, t, keep)
-    path.write_text(text, encoding="utf-8", newline="\n")
+    if text != original:
+        path.write_text(text, encoding="utf-8", newline="\n")
+        if "rules/00-index.md" not in edited:
+            edited.append("rules/00-index.md")
 
 
 def placeholders(target):
@@ -250,14 +318,26 @@ def main(argv=None) -> int:
     components = [c.strip() for c in args.components.split(",") if c.strip()]
     modules = {m.strip() for m in args.modules.split(",") if m.strip()}
     drop = {d.strip() for d in args.drop_rules.split(",") if d.strip()}
+    for name in components:
+        if not valid_name(name):
+            print("ERROR: --components value %r is not a plain component name" % name, file=sys.stderr)
+            return 2
+    for name in sorted(modules):
+        if not valid_name(name):
+            print("ERROR: --modules value %r is not a plain module name" % name, file=sys.stderr)
+            return 2
     protected = sorted(drop & pm.PROTECTED_RULES)
     if protected:
         print("ERROR: rule modules are protected and cannot be dropped: %s" % ", ".join(protected), file=sys.stderr)
         return 2
+    unknown = sorted(d for d in drop if d not in shipped_rule_numbers())
+    if unknown:
+        print("ERROR: --drop-rules names no shipped rule module: %s" % ", ".join(unknown), file=sys.stderr)
+        return 2
     if not (target / ".git").exists():
         print("NOTE: %s is not a git repository; adoption is easier to undo where it is one." % target, file=sys.stderr)
     actions = plan(target, drop, components, modules)
-    written = apply_plan(target, actions, components, modules, args.profile, drop) if args.apply else []
+    changed, edited = apply_plan(target, actions, components, modules, args.profile, drop) if args.apply else ([], [])
     counts = placeholders(target) if args.apply else {}
     if args.apply:
         (target / "context-pack.json").write_text(json.dumps({
@@ -267,10 +347,13 @@ def main(argv=None) -> int:
             "components": components, "modules": sorted(modules),
             "profile": args.profile, "dropped_rules": sorted(drop),
         }, indent=2) + "\n", encoding="utf-8")
+        if "context-pack.json" not in changed:
+            changed.append("context-pack.json")
+    written = [k for k in changed if k not in edited]
     summary = {
         "target": str(target), "applied": bool(args.apply), "profile": args.profile,
         "components": components, "modules": sorted(modules), "dropped_rules": sorted(drop),
-        "written": len(written),
+        "written": len(written), "edited": len(edited),
         "copy": sum(1 for k, _, _ in actions if k == "copy"),
         "skip": sum(1 for k, _, _ in actions if k == "skip"),
         "seed": sum(1 for k, _, _ in actions if k == "seed"),
