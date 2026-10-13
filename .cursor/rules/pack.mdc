@@ -7,10 +7,10 @@ alwaysApply: true
 
 This file is an adapter and holds no policy.
 
-- `AGENTS.md` — the entry point and router. Read it first.
-- `SOUL.md` — identity. Read it second.
+- `SOUL.md` — identity.
+- `AGENTS.md` — the entry point and router.
 
-Read both now, before answering anything.
+Read both now, before answering anything. `AGENTS.md` owns the boot order; this file does not restate it.
 
 If you can read this file but cannot read `AGENTS.md` and `SOUL.md`, stop and report that the context pack is not loaded. Do not proceed from this file alone.
 
