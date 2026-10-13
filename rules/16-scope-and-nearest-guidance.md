@@ -13,13 +13,12 @@ entry file thin enough to stay honest.
 
 ## Rules
 
-**R-16.1 — Precedence chain.** MUST rank every source by this chain, highest
-first:
-
-    platform safety > root rules/ > rules/components/<id> >
-    nearest AGENTS.md > root AGENTS.md > docs/ > code conventions > judgement
-
-*Why:* a scoped file must never outrank the rule that governs it.
+**R-16.1 — Precedence chain.** The resolution order is owned by R-01.1; MUST
+apply it. This module adds only the scoped levels R-01.1 does not carry:
+`rules/components/<id>` sits directly below the root `rules/`, and the nearest
+`AGENTS.md` outranks the root `AGENTS.md`, which outranks `docs/`. The levels
+shared with R-01.1 are deliberately not restated here, so one hierarchy cannot
+drift into two. *Why:* a scoped file must never outrank the rule that governs it.
 
 **R-16.2 — Resolution algorithm.** For any path P, MUST apply this set, stated
 once:
