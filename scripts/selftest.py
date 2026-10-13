@@ -132,6 +132,26 @@ class TestRotate(unittest.TestCase):
             archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2026.md"))]
             self.assertEqual([t.split()[-1] for t in archived], ["3", "2", "1"])
 
+    def test_a_missing_archive_is_created_with_its_header(self):
+        # A new year has no archive file yet, and every other test seeds one, so this is
+        # the only place the header-building branch runs: its title table is keyed by the
+        # live path, and indexing it with the archive path raises a KeyError.
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 7)
+            rel = "docs/03-handoff.md"
+            archive = pack.path("docs/handoff/archive-2027.md")
+            self.assertFalse(archive.exists())
+            res = rotate.run(pack, apply=True, year=2027)
+            self.assertTrue(archive.is_file())
+            archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2027.md"))]
+            self.assertTrue(archived)
+            inline = [e.title for e in pack.entries(rel)]
+            for title in archived:
+                self.assertNotIn(title, inline)
+            got = next(r for r in res if r["target"] == rel)
+            self.assertEqual(got["moved"], len(archived))
+            self.assertLessEqual(pack.capped_size(rel), pm.CAPS[rel])
+
     def test_a_second_run_changes_nothing(self):
         with tempfile.TemporaryDirectory() as d:
             pack = self._pack(d, 6)
