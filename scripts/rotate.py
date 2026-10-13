@@ -79,8 +79,13 @@ def _rotate_blocks(pack: pm.Pack, rel: str, archive_rel: str, apply: bool, year:
     ordered, move = plan_blocks(pack, rel, pm.CAPS[rel], pm.NEWEST_ENTRIES)
     have = {title for title, _ in h2_blocks(pack.read(archive_rel))}
     fresh = [e for e in move if e.title not in have]
-    fresh_titles = {e.title for e in fresh}
-    kept = [e for e in ordered if e.title not in fresh_titles]
+    # Every planned move leaves the live region; only the ones the archive does not already
+    # hold are written into it. Keeping the already-archived ones inline, as this did, leaves
+    # the region over its cap while the copy that would bring it back under already sits in
+    # the archive - so `--check` can stay red forever. The rows path below already behaves
+    # this way: `live` drops every done row and the id check only guards the archive write.
+    moved = {e.title for e in move}
+    kept = [e for e in ordered if e.title not in moved]
     res = {"target": rel, "archive": archive_rel, "kept": len(kept), "moved": len(fresh),
            "already_archived": len(move) - len(fresh),
            "inline_bytes": sum(_bytes(e.text) + 2 for e in kept)}
@@ -166,18 +171,26 @@ def _rotate_rows(pack: pm.Pack, rel: str, archive_rel: str, apply: bool, year: i
     return res
 
 
+def _rotator(rel: str):
+    """The planner/writer for one rotatable file. Both take the same arguments."""
+    return _rotate_blocks if rel == "docs/03-handoff.md" else _rotate_rows
+
+
 def run(pack: pm.Pack, apply: bool = False, year: int | None = None) -> list[dict]:
     year = year or datetime.now().year
+    # Plan every target before writing any of them. Each planner reads and parses its whole
+    # file and raises Abort on anything it cannot read, so planning them all first means a
+    # malformed table aborts with nothing written. Writing as each plan succeeded, as this
+    # did, left the handoff rotated in place when the tasks table below it turned out ragged.
+    for rel in ROTATABLE:
+        if pack.exists(rel):
+            _rotator(rel)(pack, rel, archive_path(rel, year), False, year)
     out = []
     for rel in ROTATABLE:
         if not pack.exists(rel):
             out.append({"target": rel, "status": "missing", "moved": 0, "kept": 0})
             continue
-        archive_rel = archive_path(rel, year)
-        if rel == "docs/03-handoff.md":
-            out.append(_rotate_blocks(pack, rel, archive_rel, apply, year))
-        else:
-            out.append(_rotate_rows(pack, rel, archive_rel, apply, year))
+        out.append(_rotator(rel)(pack, rel, archive_path(rel, year), apply, year))
     return out
 
 

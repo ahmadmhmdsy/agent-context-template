@@ -95,9 +95,10 @@ class TestPackModel(unittest.TestCase):
 
 
 class TestRotate(unittest.TestCase):
-    def _pack(self, tmp, count):
+    def _pack(self, tmp, count, tasks=None):
         root = Path(tmp)
         (root / "docs" / "handoff").mkdir(parents=True)
+        (root / "docs" / "tasks").mkdir(parents=True)
         entries = [
             "## 2026-10-%02dT10:00:00+03:00 Entry %d\n%s" % (i + 1, i + 1, "x" * 2000)
             for i in range(count)
@@ -108,7 +109,18 @@ class TestRotate(unittest.TestCase):
         )
         (root / "docs" / "handoff" / "archive-2026.md").write_text(
             "# Handoff archive -- 2026\n", encoding="utf-8")
+        if tasks is not None:
+            (root / "docs" / "04-tasks.md").write_text(tasks, encoding="utf-8")
+            (root / "docs" / "tasks" / "archive-2026.md").write_text(
+                "# Tasks archive -- 2026\n", encoding="utf-8")
         return pm.Pack(root)
+
+    @staticmethod
+    def _tasks(cols, rows):
+        head = "| " + " | ".join(cols) + " |"
+        sep = "|" + "|".join("---" for _ in cols) + "|"
+        body = "\n".join("| " + " | ".join(r) + " |" for r in rows)
+        return "# 04 -- Tasks (live status)\n\n%s\n%s\n%s\n" % (head, sep, body)
 
     def test_the_oldest_entries_rotate_and_the_newest_stay(self):
         with tempfile.TemporaryDirectory() as d:
@@ -120,7 +132,7 @@ class TestRotate(unittest.TestCase):
             archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2026.md"))]
             self.assertEqual([t.split()[-1] for t in archived], ["3", "2", "1"])
 
-    def test_rotation_is_idempotent(self):
+    def test_a_second_run_changes_nothing(self):
         with tempfile.TemporaryDirectory() as d:
             pack = self._pack(d, 6)
             rotate.run(pack, apply=True, year=2026)
@@ -128,6 +140,56 @@ class TestRotate(unittest.TestCase):
             res = rotate.run(pack, apply=True, year=2026)
             self.assertEqual(res[0]["moved"], 0)
             self.assertEqual(pack.read("docs/handoff/archive-2026.md"), before)
+
+    def test_an_entry_already_in_the_archive_is_not_duplicated(self):
+        # A re-merge can leave an archived entry inline again. The (timestamp, title) key
+        # exists so it is not archived twice, but it must still leave the live region: the
+        # point of the move is that the region comes back under its cap, and an entry that
+        # stays inline while its copy already sits in the archive leaves --check red
+        # forever. Counting moves, or counting archive copies, cannot see either half.
+        with tempfile.TemporaryDirectory() as d:
+            pack = self._pack(d, 7)
+            oldest = min(pack.entries("docs/03-handoff.md"), key=lambda e: e.ts)
+            arch = pack.path("docs/handoff/archive-2026.md")
+            arch.write_text(arch.read_text(encoding="utf-8") + "\n" + oldest.text + "\n",
+                            encoding="utf-8")
+            res = rotate.run(pack, apply=True, year=2026)
+            archived = [t for t, _ in _mdtable.h2_blocks(pack.read("docs/handoff/archive-2026.md"))]
+            inline = [e.title for e in pack.entries("docs/03-handoff.md")]
+            self.assertEqual(res[0]["already_archived"], 1)
+            self.assertEqual(archived.count(oldest.title), 1)
+            self.assertNotIn(oldest.title, inline)
+            self.assertLessEqual(res[0]["inline_bytes"], pm.CAPS["docs/03-handoff.md"])
+
+    def test_task_rows_rotate_into_the_tasks_archive(self):
+        rows = [["t-1", "one", "done", "a", "docs", "-", "`e.md`"],
+                ["t-2", "two", "pending", "b", "docs", "-", ""]]
+        for cols in (["id", "title", "status", "owner", "scope", "gate", "evidence"],
+                     ["ID", "Title", "Status", "Owner", "Scope", "Gate", "Evidence"]):
+            with self.subTest(header=cols[0]):
+                with tempfile.TemporaryDirectory() as d:
+                    pack = self._pack(d, 1, tasks=self._tasks(cols, rows))
+                    res = rotate.run(pack, apply=True, year=2026)
+                    done = [r for r in res if r["target"] == "docs/04-tasks.md"][0]
+                    self.assertEqual((done["moved"], done["kept"]), (1, 1))
+                    archive = pack.read("docs/tasks/archive-2026.md")
+                    self.assertIn("t-1", archive)
+                    self.assertNotIn("t-2", archive)
+                    self.assertNotIn("t-1", pack.read("docs/04-tasks.md"))
+
+    def test_a_bad_tasks_table_leaves_the_whole_tree_unchanged(self):
+        # Planning and writing must not interleave: a tasks table this bad raises Abort,
+        # and by then the handoff above it has already been rotated in place.
+        with tempfile.TemporaryDirectory() as d:
+            ragged = self._tasks(["id", "title", "status"],
+                                 [["t-1", "one", "done"], ["t-2", "two"]])
+            pack = self._pack(d, 7, tasks=ragged)
+            rels = ("docs/03-handoff.md", "docs/handoff/archive-2026.md",
+                    "docs/04-tasks.md", "docs/tasks/archive-2026.md")
+            before = {rel: pack.read(rel) for rel in rels}
+            with self.assertRaises(rotate.Abort):
+                rotate.run(pack, apply=True, year=2026)
+            self.assertEqual({rel: pack.read(rel) for rel in rels}, before)
 
     def test_a_timestampless_entry_aborts_without_writing(self):
         with tempfile.TemporaryDirectory() as d:
