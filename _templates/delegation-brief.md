@@ -1,10 +1,10 @@
 # Delegation brief — <task id>
 
-Copy this form before dispatching any delegated task. A brief with a blank
-field is not ready to send (`R-12.5`). The definition-of-ready fields are the
-task id, the owner, the write scope, the acceptance criterion, and the stop
-condition; add the deliverable, the reason, and the inputs that R-12.5 also
-names.
+Copy this form before dispatching any delegated task, and fill every field
+(`R-12.5`). The definition-of-ready fields are the task id, the owner, the
+write scope, the acceptance criterion, and the stop
+condition; the same rule also lists the deliverable, the reason, and the
+inputs.
 
 - **Task id:** **ADAPT**
 - **Owner:** **ADAPT** — the agent that receives this brief
@@ -35,8 +35,7 @@ The exact file or directory prefixes the receiver may modify — not "the repo".
 ## Acceptance criterion
 
 The observable, pre-registered condition that means the deliverable is correct.
-Written before dispatch; a criterion invented after the result is not a
-criterion. **ADAPT**
+State it as a command, a file, or a number the receiver can check. **ADAPT**
 
 ## Stop condition
 
@@ -51,10 +50,9 @@ dispatch. They share no path (`R-12.3`).
 - **Delegator's active scope:** **ADAPT**
 - **Shared paths:** none — **ADAPT**
 
-Overlap is not a race to be run: sequence the work or hand it off instead.
+A shared path cancels the dispatch: report it rather than writing (`R-12.3`).
 
 ## Return format
 
-What the receiver sends back, and where the durable artifact lands. Delegated
-output is a claim, verified against the acceptance criterion before it is
-accepted (`R-12.7`). **ADAPT**
+What the receiver sends back, and where the durable artifact lands. The
+delegator compares it with the acceptance criterion above (`R-12.7`). **ADAPT**

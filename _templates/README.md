@@ -14,6 +14,8 @@ the fact produces a rationalization, not a record.
 | lesson.md | one entry in docs/05-memory.md | dated, with its condition and source |
 | incident.md | a record of something that broke | timeline, root cause, follow-up tasks, and a lesson |
 | session-close.md | the shutdown ritual | all four state documents updated |
+| component-agents.md | a scoped AGENTS.md for one component | the component has a row in the root component table |
+| delegation-brief.md | one dispatched delegated task | the delegator has checked the return against the acceptance criterion |
 
 Two forms live beside the artifacts they produce, not here:
 
