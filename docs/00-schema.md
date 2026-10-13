@@ -24,7 +24,7 @@ The single authority for every controlled value and record field the pack uses.
 | Rule status | `draft \| active \| superseded \| retired` |
 | Lesson status | `observed \| candidate \| validated \| promoted \| rejected` |
 
-Ordering conventions are also declared here so no document can contradict them: handoff newest-first, decisions newest-first, memory shards oldest-first, tasks rewrite-in-place, contract blocks frozen.
+Ordering conventions are also declared here so no document can contradict them: handoff newest-first, decisions newest-first, memory shards oldest-first, memory topic registry newest-updated first, tasks rewrite-in-place, contract blocks frozen.
 
 ## Record fields
 
