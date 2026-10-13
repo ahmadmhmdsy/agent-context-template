@@ -34,6 +34,9 @@ in advance removes the choice.
    stop and ask — do not choose.
 5. If a source is unavailable, report SKIPPED with the reason. Never substitute
    a plausible value.
+6. Between two readings of the same source, the freshest verification timestamp
+   wins. A fact that cannot be verified this session renders `UNKNOWN` and never
+   inherits an older value.
 
 ## Derived values
 

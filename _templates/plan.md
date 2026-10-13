@@ -1,9 +1,11 @@
 # Plan — <title>
 
-- **Status:** draft | approved | in progress | done | abandoned
+- **Status:** draft | approved | in_progress | done | abandoned
 - **Owner:** <owner>
 - **Created:** <ISO 8601 with offset>
 - **Authorized by:** <who approved it, or "not yet approved">
+
+Status values are defined in docs/00-schema.md, the vocabulary authority.
 
 ## Goal
 

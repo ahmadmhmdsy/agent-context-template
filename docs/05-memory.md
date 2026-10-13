@@ -17,6 +17,9 @@ time it is not written down. This is the cheapest place to put it.
 
 One entry per lesson cluster: a dated heading, then one bullet per lesson.
 
+Entry ordering follows the convention declared in docs/00-schema.md; this file
+does not restate it.
+
 Each bullet MUST contain: the claim in bold, the condition under which it
 holds, and the evidence or reasoning that established it.
 

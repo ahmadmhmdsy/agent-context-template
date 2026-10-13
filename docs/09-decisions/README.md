@@ -28,7 +28,8 @@ Do **not** record routine implementation choices. They belong in the code.
 
 | ID | Title | Status | Date |
 |---|---|---|---|
-| 0000 | (template) | — | — |
+
+`0000-template.md` is a form, not an entry; it never appears in the index above.
 
 ## Naming
 
