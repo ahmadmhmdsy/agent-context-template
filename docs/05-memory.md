@@ -1,7 +1,7 @@
-# 05 — Memory (lessons and decisions)
+# 05 — Memory (lessons)
 
 **Contract**
-- **Role:** durable lessons and settled decisions.
+- **Role:** the topic registry for durable lessons.
 - **Mutability:** the registry is updated in place; the shards it points at are
   append-only. Never delete a lesson — supersede it with a new entry that
   states what changed.
