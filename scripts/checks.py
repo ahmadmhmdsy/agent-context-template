@@ -47,14 +47,24 @@ class Finding:
     path: str
     line: int
     message: str
+    key: str = ""
 
     def fingerprint(self) -> str:
-        norm = re.sub(r"\d+", "#", self.message)
-        return "%s|%s|%d|%s" % (self.check, self.path, self.line, norm)
+        # A finding's identity is its exact text, digits included. Normalizing digits
+        # collapsed `T-001` and `T-002` - and `R-01.4` and `R-02.4` - into one
+        # fingerprint, so a baseline recorded for one violation silently absorbed the
+        # other, and a new violation could never fail the run. Digits are identity for
+        # task ids, rule ids and duplicate titles; they are noise only for a measured
+        # value, and the call site says which it is by passing `key`. A regex cannot
+        # tell the two apart, which is why it must not try.
+        return "%s|%s|%d|%s" % (self.check, self.path, self.line, self.key or self.message)
 
 
-def F(check, severity, path, line, message):
-    return Finding(check, severity, path, line, message)
+def F(check, severity, path, line, message, key=None):
+    """`key` stands in for a message that embeds a value which legitimately changes -
+    a byte count, a freshness age - so that finding keeps one identity across edits.
+    It defaults to the message, so the message is the identity wherever it is stable."""
+    return Finding(check, severity, path, line, message, key if key is not None else message)
 
 
 def walk(pack):
@@ -196,7 +206,8 @@ def c01_adapter_purity(pack):
             continue
         size = pack.size(rel)
         if size > pm.ADAPTER_CAP:
-            out.append(F("adapter", "error", rel, 0, "%d bytes exceeds the %d cap" % (size, pm.ADAPTER_CAP)))
+            out.append(F("adapter", "error", rel, 0, "%d bytes exceeds the %d cap" % (size, pm.ADAPTER_CAP),
+                         "adapter file exceeds its byte cap"))
         text = pack.read(rel)
         if "AGENTS.md" not in text:
             out.append(F("adapter", "error", rel, 0, "does not point at AGENTS.md"))
@@ -219,7 +230,8 @@ def c02_scoped_entries(pack):
     for rel in pack.scoped_agents():
         size = pack.size(rel)
         if size > pm.SCOPED_CAP:
-            out.append(F("scoped", "error", rel, 0, "%d bytes exceeds the %d cap" % (size, pm.SCOPED_CAP)))
+            out.append(F("scoped", "error", rel, 0, "%d bytes exceeds the %d cap" % (size, pm.SCOPED_CAP),
+                         "scoped entry exceeds its byte cap"))
         text = pack.read(rel)
         if not re.search(r"(?i)smallest\s+validation", text):
             out.append(F("scoped", "error", rel, 0, "declares no smallest validation command"))
@@ -330,7 +342,8 @@ def c06_freshness(pack):
         age = (now - ts).days
         if age > window:
             out.append(F("freshness", "warning", "docs/02-environment.md", t.line(),
-                         "STALE: %s days old, window is %d days" % (age, window)))
+                         "STALE: %s days old, window is %d days" % (age, window),
+                         "the row's Last verified is older than its window"))
     return out
 
 
@@ -396,12 +409,14 @@ def c09_inline_caps(pack):
     out = []
     for rel, cap in pm.CAPS.items():
         if pack.exists(rel) and pack.capped_size(rel) > cap:
-            out.append(F("caps", "error", rel, 0, "%d bytes exceeds the %d cap" % (pack.capped_size(rel), cap)))
+            out.append(F("caps", "error", rel, 0, "%d bytes exceeds the %d cap" % (pack.capped_size(rel), cap),
+                         "file exceeds its inline byte cap"))
     total = sum(pack.capped_size(r) for r in ("SOUL.md", "AGENTS.md", "docs/03-handoff.md",
                                               "docs/04-tasks.md", "docs/08-coordination.md") if pack.exists(r))
     if total > pm.BOOT_TOTAL:
         out.append(F("caps", "error", "AGENTS.md", 0,
-                     "boot set is %d bytes, over the %d cap" % (total, pm.BOOT_TOTAL)))
+                     "boot set is %d bytes, over the %d cap" % (total, pm.BOOT_TOTAL),
+                     "boot set exceeds its byte cap"))
     return out
 
 

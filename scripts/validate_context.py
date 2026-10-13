@@ -18,19 +18,43 @@ import checks
 
 
 def load_baseline(path):
-    """A missing or malformed baseline is no baseline: every finding is new. Fails closed."""
+    """A missing or malformed baseline is no baseline: every finding is new. Fails closed.
+    Returns (fingerprints or None, review_by, pack_version)."""
     if not path:
-        return None, ""
+        return None, "", ""
     p = Path(path)
     if not p.is_file():
         print("WARNING: baseline %s does not exist; treating every finding as new" % path, file=sys.stderr)
-        return None, ""
+        return None, "", ""
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
-        return set(data["findings"]), str(data.get("review_by", ""))
+        return (set(data["findings"]),
+                str(data.get("review_by", "")),
+                str(data.get("pack_version", "")))
     except (json.JSONDecodeError, KeyError, TypeError) as exc:
         print("WARNING: baseline %s is malformed (%s); treating every finding as new" % (path, exc), file=sys.stderr)
-        return None, ""
+        return None, "", ""
+
+
+def baseline_warnings(baselined, review_by, pack_version, this_version):
+    """Why this baseline cannot be trusted to describe this pack. Never errors: a
+    baseline is an aid, not a gate, so the exit code stays `1 if errors else 0` and
+    the five --json keys do not change. An empty pack_version means a baseline written
+    before the pack had a VERSION, which is not a finding."""
+    if baselined is None:
+        return []
+    notes = []
+    if pack_version and pack_version != this_version:
+        notes.append("baseline was written for pack version %s, this pack is %s" % (pack_version, this_version))
+    if review_by:
+        try:
+            lapsed = date.fromisoformat(review_by) < date.today()
+        except ValueError:
+            notes.append("baseline review_by %r does not parse as a date" % review_by)
+        else:
+            if lapsed:
+                notes.append("baseline review_by %s has lapsed" % review_by)
+    return notes
 
 
 def main(argv=None) -> int:
@@ -54,11 +78,15 @@ def main(argv=None) -> int:
         Path(args.write_baseline).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         print("wrote baseline with %d findings, review_by %s" % (len(payload["findings"]), payload["review_by"]))
         return 0
-    baselined, review_by = load_baseline(args.baseline)
+    baselined, review_by, baseline_version = load_baseline(args.baseline)
     new = [f for f in found if not (baselined and f.fingerprint() in baselined)]
     old = len(found) - len(new) if baselined else 0
     errors = [f for f in new if f.severity == "error"]
     warnings = [f for f in new if f.severity == "warning"]
+    # Warnings about the baseline itself, never findings and never errors: they cannot
+    # change the exit code (`1 if errors else 0`) or --json, which keeps five keys.
+    for note in baseline_warnings(baselined, review_by, baseline_version, pack.read("VERSION").strip()):
+        print("WARNING: %s" % note, file=sys.stderr)
     if args.json:
         print(json.dumps({
             "new": [{"check": f.check, "severity": f.severity, "path": f.path,
