@@ -39,8 +39,8 @@ scoped entry is in `_templates/`.
 
 ## Frozen surfaces
 
-These surfaces are frozen: each changes only through its own change control,
-never as a side effect of another task.
+These surfaces are frozen; each file's own Contract block owns its change
+control:
 
 - `SOUL.md` — identity.
 - `AGENTS.md` — this router.
@@ -48,8 +48,7 @@ never as a side effect of another task.
 - `_templates/` — the artifact forms.
 - `CLAUDE.md`, `GEMINI.md`, `.cursor/rules/pack.mdc`,
   `.github/copilot-instructions.md` — pointer-only adapters, each pointing at
-  this file and `SOUL.md` and carrying no policy, no rule text, and no project
-  fact.
+  this file and `SOUL.md`.
 
 ## Where truth lives
 
